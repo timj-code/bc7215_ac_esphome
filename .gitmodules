@@ -1,0 +1,3 @@
+[submodule "deps/bc7215_ac_lib"]
+	path = deps/bc7215_ac_lib
+	url = https://github.com/bitcode-tech/bc7215_ac_lib.git
