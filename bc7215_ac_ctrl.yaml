@@ -19,7 +19,7 @@ esp32:
 external_components:
   - source:
       type: local
-      path: components
+      path: ${bc7215_project_dir}/components
     components: [bc7215_ac]
 
 logger:

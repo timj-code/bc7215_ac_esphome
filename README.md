@@ -1,6 +1,12 @@
 # ESPHome Universal A/C IR Control (Using BC7215)
 
-This ESPHome project turns an ESP32 module plus a BC7215 module into a universal A/C IR remote that can be connected to Home Assistant. It supports one-step pairing with almost any air conditioner. You will be able to control the air conditioner through Home Assistant, and control operations made with the original IR remote can also be synchronized back to Home Assistant.
+This ESPHome project turns an ESP32 module plus a BC7215 module into a universal A/C IR remote that can be connected to Home Assistant. It supports one-step pairing with almost any air conditioner. You will be able to control the air conditioner through Home Assistant, if:
+
+- **Your air conditioner has an IR remote**
+
+- **The AC remote controller has a LCD screen can display Temperature**
+
+The operations made with the original IR remote can also be synchronized back to Home Assistant,
 
 This project can use any ESP32 module. You only need to change the hardware settings in the `bc7215_ac_ctrl.yaml` file.
 
@@ -31,36 +37,48 @@ climate:
 
 ## Installation
 
+The following installation guide assume you are running ESPHome locally installed, not via docker. If you 
+
 1. Clone the project. Because this project depends on the AC control library project and examples at <https://github.com/bitcode-tech/bc7215_ac_lib>, you cannot download it as a ZIP file. You must use the `git clone --recursive` command to fully obtain the dependent library:
    
    ```bash
    git clone --recursive https://github.com/timj-code/bc7215_ac_esphome.git
    ```
 
-2. After cloning the project locally, run the included Python utility to create a directory environment file:
+2. After cloning the project locally, prepare the path config file.
    
-   ```bash
-   cd esphome_ac_control
-   python3 tools/prepare_esphome.py
-   ```
+   - **If your ESPHome is installed locally (not via docker):**
+     
+     run the included Python utility to create a directory environment file:
+     
+     ```bash
+     cd esphome_ac_control
+     python3 tools/prepare_esphome.py
+     ```
+     
+     After running it, a `local_paths.yaml` file will be created in the project root directory. It contains the absolute path of the project directory. Its contents will be something like the following:
+     
+     ```bash
+     bc7215_project_dir: "/home/xxx/projects/esphome_ac_control"
+     ```
+     
+     Or, under Windows, it may look like this:
+     
+     ```bash
+     bc7215_project_dir: "C:/Users/xxx/esphome_ac_control"
+     ```
+     
+     You can also create this file manually, but make sure both the file name and directory path are correct.
    
-   After running it, a `local_paths.yaml` file will be created in the project root directory. It contains the absolute path of the project directory. Its contents will be something like the following:
-   
-   ```yaml
-   bc7215_project_dir: "/home/xxx/projects/esphome_ac_control"
-   ```
-   
-   Or, under Windows, it may look like this:
-   
-   ```yaml
-   bc7215_project_dir: "C:/Users/xxx/esphome_ac_control"
-   ```
-   
-   You can also create this file manually, but make sure both the file name and directory path are correct.
+   - **If your ESPHome is installed via docker:**
+     
+     Rename the `local_paths.yaml.template` file to `local_paths.yaml` (The content is `bc7215_project_dir: "/config"`)
 
 3. Modify the processor and I/O pin settings in `bc7215_ac_ctrl.yaml` according to your own hardware.
 
-4. Run the following command in the project root directory:
+4. Rename the `secrets.yaml.temaplate` file to `secrest.yaml` and replace the file contents with your WiFi name and password.
+
+5. Run the following command in the project root directory:
    
    ```bash
    esphome run bc7215_ac_ctrl.yaml
@@ -73,8 +91,6 @@ climate:
    ```
    
    Then install it from the browser. The first installation must be done through a USB-to-serial connection. After that, OTA can be used, so the device does not need to be physically connected to the computer.
-
-5. If you got an error says there's no WiFi information, rename the `secrets.yaml.temaplate` file to `secrest.yaml` and replace the file contents with your WiFi name and password.
 
 ## Usage
 
