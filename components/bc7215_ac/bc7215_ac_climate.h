@@ -68,7 +68,7 @@ class BC7215ACClimate : public climate::Climate, public Component {
 	ParsingState parsing_state;
     bool library_unit_celsius;
   };
-
+  static constexpr uint32_t kPreferenceVersion = 1;
 
   void set_status_(const std::string &message);
   void handle_pairing_loop_();

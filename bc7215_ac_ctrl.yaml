@@ -70,3 +70,6 @@ text_sensor:
     update_interval: 1s
     lambda: |-
       return {id(ac_controller).status_message()};
+
+preferences:
+  flash_write_interval: 5s

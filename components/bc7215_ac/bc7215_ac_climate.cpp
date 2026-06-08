@@ -38,6 +38,7 @@ void BC7215ACClimate::setup() {
   this->action = climate::CLIMATE_ACTION_OFF;
   this->set_fan_mode_(climate::CLIMATE_FAN_AUTO);
 
+  this->pref_ = this->make_entity_preference<StoredPairingData>(kPreferenceVersion);
   this->load_pairing_();
 
   this->publish_state();
