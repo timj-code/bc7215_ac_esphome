@@ -37,8 +37,6 @@ climate:
 
 ## Installation
 
-The following installation guide assume you are running ESPHome locally installed, not via docker. If you 
-
 1. Clone the project. Because this project depends on the AC control library project and examples at <https://github.com/bitcode-tech/bc7215_ac_lib>, you cannot download it as a ZIP file. You must use the `git clone --recursive` command to fully obtain the dependent library:
    
    ```bash
