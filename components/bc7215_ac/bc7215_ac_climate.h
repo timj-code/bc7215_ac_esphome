@@ -69,9 +69,6 @@ class BC7215ACClimate : public climate::Climate, public Component {
     bool library_unit_celsius;
   };
 
-  // Increment this when StoredPairingData changes. This avoids loading
-  // binary data saved by an older firmware with a different struct layout.
-  static constexpr uint32_t kPreferenceVersion = 2;
 
   void set_status_(const std::string &message);
   void handle_pairing_loop_();
