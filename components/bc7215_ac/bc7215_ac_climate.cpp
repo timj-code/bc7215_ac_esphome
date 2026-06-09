@@ -15,8 +15,8 @@ void BC7215ACClimate::setup() {
 
   this->ac_ = std::make_unique<bc7215::BC7215AC>(
       this->uart_num_,
-      this->tx_pin_,
       this->rx_pin_,
+      this->tx_pin_,
       this->busy_pin_,
       this->mod_pin_);
 

@@ -1,0 +1,17 @@
+{
+  "name": "BC7215 AC Controller",
+  "version": "1.2.0",
+  "home_assistant_domain": "esphome",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "bc7215_ac_ctrl_esp32c3.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}

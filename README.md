@@ -1,14 +1,36 @@
-# ESPHome Universal A/C IR Control (Using BC7215)
+# ESPHome Universal A/C IR Control (Powered by BC7215)
 
-This ESPHome project turns an ESP32 module plus a BC7215 module into a universal A/C IR remote that can be connected to Home Assistant. It supports one-step pairing with almost any air conditioner. You will be able to control the air conditioner through Home Assistant, if:
+This ESPHome project turns an ESP32 module combined with a BC7215 module into a universal A/C IR remote control that integrates seamlessly with Home Assistant. It supports one-step pairing with almost any air conditioner.
 
-- **Your air conditioner has an IR remote**
+You can control your air conditioner through Home Assistant if:
 
-- **The AC remote controller has a LCD screen can display Temperature**
+- **Your air conditioner uses an IR remote control.**
 
-The operations made with the original IR remote can also be synchronized back to Home Assistant,
+- **The original AC remote features an LCD screen that displays the temperature.**
 
-This project can use any ESP32 module. You only need to change the hardware settings in the `bc7215_ac_ctrl.yaml` file.
+**Bonus:** Any operations made using the original IR remote will also be synchronized back to Home Assistant in real time!
+
+## Installation Methods
+
+There are two ways to install the firmware on your ESP32:
+
+### Method 1: Web Install (Recommended)
+
+This is the easiest and fastest way to get your device up and running. No ESPHome installation or command-line operations are required—everything is done directly in your web browser.
+
+*Note: The only limitation is that your hardware setup must match the default configuration. This method specifically requires an **ESP32-C3** module, and you must connect it to the exact GPIO pins specified on the web page. (Using an ESP32-C3 Super Mini module is recommended for a seamless experience).*
+
+For the **ESP32-C3 Super Mini**, connect it to the BC7215 module as shown below:
+
+![](img/supermini-bc7215module-wiring.jpg)
+
+Once the hardware is ready, open the following page and follow the on-screen instructions:
+
+[https://timj-code.github.io/bc7215_ac_esphome/](https://timj-code.github.io/bc7215_ac_esphome/)
+
+### Method 2: Clone and Compile (Custom Setup)
+
+This method allows you to use any ESP32 variant and customize the GPIO pins to your preference. You will just need to modify the hardware configurations in the `bc7215_ac_ctrl.yaml` file.
 
 Platform definition section:
 
@@ -17,7 +39,7 @@ esp32:
   variant: esp32c3
 ```
 
-BC7215 module connection definition section:
+BC7215 module pin definition section:
 
 ```yaml
 climate:
@@ -33,89 +55,82 @@ climate:
   bc7215_mod_pin: GPIO0
 ```
 
-**Note: Do not choose a UART that conflicts with the download/programming port. Also avoid using GPIO pins that conflict with other hardware, such as an LCD, LEDs, buttons, etc.**
+****Important Note:** Do not select a UART port that conflicts with the download/programming port. Also, avoid using GPIO pins that are already assigned to other hardware components (such as LCDs, LEDs, or buttons).
 
-## Installation
+#### Step 1: Clone the project
 
-1. Clone the project. Because this project depends on the AC control library project and examples at <https://github.com/bitcode-tech/bc7215_ac_lib>, you cannot download it as a ZIP file. You must use the `git clone --recursive` command to fully obtain the dependent library:
+Because this project relies on git submodules (the AC control library and examples from [GitHub - bitcode-tech/bc7215_ac_lib · GitHub](https://github.com/bitcode-tech/bc7215_ac_lib)), **do not download it as a ZIP file**. You must use the `git clone --recursive` command to fetch all required dependencies:
+
+```bash
+git clone --recursive https://github.com/timj-code/bc7215_ac_esphome.git
+```
+
+#### Step 2: Modify hardware settings
+
+Open `bc7215_ac_ctrl.yaml` and adjust the processor type and I/O pin configurations to match your specific hardware setup.
+
+#### Step 3: Configure Wi-Fi
+
+Rename the `secrets.yaml.template` file to `secrets.yaml`, then open it and enter your Wi-Fi SSID and password.
+
+#### Step 4: Compile & Install
+
+Run the following command in the project root directory:
+
+```bash
+esphome run bc7215_ac_ctrl.yaml
+```
+
+Alternatively, you can launch the ESPHome dashboard:
+
+```bash
+esphome dashboard ./
+```
+
+And complete the installation via your browser.
+
+*Note: The **first** installation must be done via a physical USB-to-serial connection. Subsequent updates can be done over-the-air (OTA), so you won't need to plug the device into your computer again.*
+
+## Usage & Pairing Guide
+
+Once the hardware is connected and the firmware is flashed, a new air conditioner device will appear in Home Assistant. This device includes:
+
+- A climate control entity (A/C controller)
+
+- Two action buttons
+
+- A Text Sensor to display real-time status info
+
+### How to Pair
+
+Before you can control your A/C, you must pair the module with your unit. This is a simple one-step process that doesn't require knowing your A/C's brand or model, as the underlying library automatically detects the IR protocol.
+
+To pair, you need to transmit a specific IR signal from your original remote to the BC7215 module. **The remote must be set to Cooling Mode at 25°C.**
+
+> (Note for Fahrenheit users: If your A/C uses Fahrenheit, set it to 78°F. You may also need to adjust the configuration in your YAML file. Since I don't own a Fahrenheit-based A/C, this mode is currently untested—feedback is highly welcome!)
+
+### Pairing Steps:
+
+1. Set your original A/C remote to **Cooling Mode at 25°C**.
+
+2. Look at your device's interface in Home Assistant (it should look similar to the image below):
    
-   ```bash
-   git clone --recursive https://github.com/timj-code/bc7215_ac_esphome.git
-   ```
+   ![Buttons and status display](./img/Home%20Assistant1.png)
 
-2. After cloning the project locally, prepare the path config file.
+3. Click the **Pair Button** in Home Assistant. The Text Sensor will update to:
    
-   - **If your ESPHome is installed locally (not via docker):**
-     
-     run the included Python utility to create a directory environment file:
-     
-     ```bash
-     cd esphome_ac_control
-     python3 tools/prepare_esphome.py
-     ```
-     
-     After running it, a `local_paths.yaml` file will be created in the project root directory. It contains the absolute path of the project directory. Its contents will be something like the following:
-     
-     ```bash
-     bc7215_project_dir: "/home/xxx/projects/esphome_ac_control"
-     ```
-     
-     Or, under Windows, it may look like this:
-     
-     ```bash
-     bc7215_project_dir: "C:/Users/xxx/esphome_ac_control"
-     ```
-     
-     You can also create this file manually, but make sure both the file name and directory path are correct.
+   > `Pairing: press Fan with 25°C/Cool mode`
+
+4. The blue LED on the BC7215 module will light up. Now, point your original remote at the module and press the **Fan Speed** button.
+
+5. Pairing is usually instantaneous (though Home Assistant might take a brief second to reflect the state). Once successful, the status will update to:
    
-   - **If your ESPHome is installed via docker:**
-     
-     Rename the `local_paths.yaml.template` file to `local_paths.yaml` (The content is `bc7215_project_dir: "/config"`)
+   > 1. `AC Paired`
 
-3. Modify the processor and I/O pin settings in `bc7215_ac_ctrl.yaml` according to your own hardware.
-
-4. Rename the `secrets.yaml.temaplate` file to `secrest.yaml` and replace the file contents with your WiFi name and password.
-
-5. Run the following command in the project root directory:
-   
-   ```bash
-   esphome run bc7215_ac_ctrl.yaml
-   ```
-   
-   Or run:
-   
-   ```bash
-   esphome dashboard ./
-   ```
-   
-   Then install it from the browser. The first installation must be done through a USB-to-serial connection. After that, OTA can be used, so the device does not need to be physically connected to the computer.
-
-## Usage
-
-After the hardware is connected and the firmware is compiled and installed on the ESP32, an air-conditioner device will appear in Home Assistant. The device contains several entities: an air-conditioner controller, two buttons, and one Text Sensor used to display necessary status information.
-
-Before controlling the air conditioner, you must pair it with the AC. Pairing only requires one step and does not require knowing the brand or model, because the AC control library automatically identifies the protocol used. The pairing operation is to send an IR remote control signal to the BC7215 module.
-
-**The transmitted signal must be from the remote control in cooling mode at 25°C.** 
-
-> (or 78°F if the AC is  Fahrenheit, for ACs in Fahrenheit, you may also need to change yaml file. The Fahrenheit mode is not tested as I don't have one, those who have are welcomed to give a feedback)
-
-A reliable method of pairing is to first set the remote control to cooling mode at 25°C first, and then use the **Fan Speed** button for pairing. The device information page shown in Home Assistant looks roughly like this:
-
-![Buttons and status display](./img/Home%20Assistant1.png)
-
-Press the **Pair Button**, and the content of the Text Sensor will change to:
-
-> Pairing: press Fan with 25°C/Cool mode
-
-At the same time, the blue LED on the BC7215 module will light up. At this point, you can press the remote control button to pair. Pairing is usually completed almost instantly, although the display in Home Assistant may have a slight delay. After pairing is complete, the displayed content will become:
-
-> AC Paired
-
-At this point, you should be able to control the air conditioner through Home Assistant. The blue LED on the BC7215 module will remain on, because the program keeps it in receive mode continuously. In this way, the BC7215 decoding function can synchronize operations made with the original remote control back to Home Assistant. 
+You can now fully control your air conditioner via Home Assistant! The blue LED on the BC7215 module will remain illuminated, indicating it is continuously listening for IR signals. This allows Home Assistant to stay perfectly in sync whenever you use the original physical remote.
 
 ![](./img/Home%20Assistant2.png)
 
-#### Purpose of the Alt Button:
+#### What does the "Alt Button" do?
 
 According to the BC7215 AC library documentation, a small number of air conditioners may fail to pair, or may pair successfully but still cannot control the AC. **This button is only intended to be used in such situations.** In my program design, each press switches to another built-in special protocol and sends a test signal. If you find that the air conditioner responds after switching to a certain protocol, that should be the setting capable of controlling your air conditioner. Since I have not encountered an air conditioner that cannot be controlled, I have not been able to test this feature myself. Feedback from users who encounter this situation would be appreciated.

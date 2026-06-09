@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BC7215 AC Controller Web Installer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Install BC7215 AC Controller firmware on an ESP32-C3 board using ESP Web Tools.">
+
+  <script
+    type="module"
+    src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module">
+  </script>
+
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --card: rgba(255, 255, 255, 0.88);
+      --card-solid: #ffffff;
+      --text: #172033;
+      --muted: #667085;
+      --line: #d9e2f2;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-soft: #dbeafe;
+      --accent: #06b6d4;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --shadow: 0 20px 55px rgba(15, 23, 42, 0.12);
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --max-width: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.18), transparent 34rem),
+        radial-gradient(circle at top right, rgba(6, 182, 212, 0.18), transparent 28rem),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 46%, #ffffff 100%);
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: var(--primary-dark);
+      text-decoration: underline;
+    }
+
+    .page {
+      width: min(var(--max-width), calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.28);
+    }
+
+    .brand-mark svg {
+      width: 23px;
+      height: 23px;
+    }
+
+    .nav-note {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
+      gap: 28px;
+      align-items: stretch;
+      margin-bottom: 28px;
+    }
+
+    .hero-copy,
+    .install-card,
+    .section-card {
+      border: 1px solid rgba(217, 226, 242, 0.9);
+      background: var(--card);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow);
+      border-radius: var(--radius-lg);
+    }
+
+    .hero-copy {
+      padding: clamp(28px, 5vw, 58px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-copy::after {
+      content: "";
+      position: absolute;
+      right: -90px;
+      bottom: -120px;
+      width: 280px;
+      height: 280px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.16), rgba(6, 182, 212, 0.15));
+      pointer-events: none;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: #1e3a8a;
+      background: rgba(219, 234, 254, 0.85);
+      border: 1px solid rgba(147, 197, 253, 0.55);
+      font-size: 0.9rem;
+      font-weight: 650;
+    }
+
+    .badge.secondary {
+      color: #0f766e;
+      background: rgba(204, 251, 241, 0.72);
+      border-color: rgba(94, 234, 212, 0.5);
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: clamp(2.25rem, 7vw, 4.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.07em;
+    }
+
+    .lead {
+      max-width: 700px;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(1.03rem, 2vw, 1.22rem);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .button-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      min-height: 44px;
+      padding: 11px 16px;
+      border-radius: 999px;
+      font-weight: 720;
+      border: 1px solid transparent;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+    }
+
+    .button-link:hover {
+      transform: translateY(-1px);
+      text-decoration: none;
+    }
+
+    .button-link.primary {
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 12px 28px rgba(37, 99, 235, 0.28);
+    }
+
+    .button-link.ghost {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.72);
+      border-color: rgba(217, 226, 242, 0.95);
+    }
+
+    .install-card {
+      padding: 26px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 420px;
+    }
+
+    .install-panel {
+      padding: 22px;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.92));
+      border: 1px solid var(--line);
+    }
+
+    .install-panel h2,
+    .section-card h2 {
+      margin: 0 0 10px;
+      font-size: 1.35rem;
+      letter-spacing: -0.03em;
+    }
+
+    .install-panel p {
+      margin: 0 0 18px;
+      color: var(--muted);
+    }
+
+    .installer-box {
+      padding: 18px;
+      border-radius: var(--radius-md);
+      background: var(--primary-soft);
+      border: 1px dashed rgba(37, 99, 235, 0.42);
+      text-align: center;
+    }
+
+    esp-web-install-button {
+      display: inline-block;
+      margin: 4px auto;
+    }
+
+    .requirements {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .requirement {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(217, 226, 242, 0.9);
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .check {
+      width: 22px;
+      height: 22px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: white;
+      background: var(--success);
+      font-size: 0.84rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 22px;
+      margin-top: 22px;
+    }
+
+    .section-card {
+      padding: clamp(22px, 4vw, 32px);
+    }
+
+    .section-kicker {
+      margin: 0 0 8px;
+      color: var(--primary);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .section-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .wiring-table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      margin-top: 18px;
+      border-radius: var(--radius-md);
+      background: var(--card-solid);
+      border: 1px solid var(--line);
+    }
+
+    .wiring-table th,
+    .wiring-table td {
+      padding: 13px 15px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wiring-table th {
+      color: #334155;
+      background: #f1f5f9;
+      font-size: 0.88rem;
+      letter-spacing: 0.02em;
+    }
+
+    .wiring-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .pin {
+      display: inline-flex;
+      align-items: center;
+      min-height: 26px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      color: #075985;
+      background: #e0f2fe;
+      font-weight: 750;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    .steps {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+      display: grid;
+      gap: 12px;
+    }
+
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      color: var(--muted);
+    }
+
+    .steps li span {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .steps strong {
+      color: #475569;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .steps li::before {
+      content: counter(step);
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      font-weight: 800;
+      box-shadow: 0 8px 16px rgba(37, 99, 235, 0.2);
+    }
+
+    .notice {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 18px 20px;
+      border-radius: var(--radius-md);
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      color: #78350f;
+    }
+
+    .notice-icon {
+      width: 28px;
+      height: 28px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      color: white;
+      background: var(--warning);
+      font-weight: 900;
+    }
+
+    .notice strong {
+      color: #713f12;
+    }
+
+    footer {
+      margin-top: 34px;
+      padding: 24px 0 0;
+      color: var(--muted);
+      text-align: center;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 860px) {
+      .hero,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .install-card {
+        min-height: unset;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .page {
+        width: min(100% - 22px, var(--max-width));
+        padding-top: 16px;
+      }
+
+      .hero-copy,
+      .install-card,
+      .section-card {
+        border-radius: 22px;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      .button-link {
+        width: 100%;
+      }
+
+      .wiring-table {
+        font-size: 0.9rem;
+      }
+
+      .wiring-table th,
+      .wiring-table td {
+        padding: 11px 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <header class="topbar" aria-label="Page header">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" role="img">
+            <path d="M7 7.5h10M8 12h8M10 16.5h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M5.5 3.75h13A1.75 1.75 0 0 1 20.25 5.5v13a1.75 1.75 0 0 1-1.75 1.75h-13A1.75 1.75 0 0 1 3.75 18.5v-13A1.75 1.75 0 0 1 5.5 3.75Z" stroke="currentColor" stroke-width="1.8"/>
+          </svg>
+        </div>
+        <span>BC7215 AC Controller</span>
+      </div>
+      <div class="nav-note">ESP32-C3 Web Installer</div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="badge-row">
+          <span class="badge">ESP Web Tools</span>
+          <span class="badge secondary">Home Assistant ready</span>
+        </div>
+
+        <h1>Install your BC7215 AC firmware in the browser.</h1>
+
+        <p class="lead">
+          A simple web installer for ESP32-C3 boards using the default BC7215A
+          wiring. Connect the board with USB, install the firmware, configure
+          WiFi, and add the device in Home Assistant.
+        </p>
+</div>
+
+      <aside class="install-card" id="install" aria-labelledby="install-title">
+        <div class="install-panel">
+          <p class="section-kicker">Step 1</p>
+          <h2 id="install-title">Install firmware</h2>
+          <p>
+            Connect the ESP32-C3 board to your computer with a USB cable,
+            then click the button below.
+          </p>
+
+          <div class="installer-box">
+            <esp-web-install-button manifest="firmware/manifest.json">
+            </esp-web-install-button>
+          </div>
+        </div>
+
+        <div class="requirements" aria-label="Requirements">
+          <div class="requirement">
+            <span class="check">✓</span>
+            <span>Use desktop Chrome or Microsoft Edge. Firefox usually does not support this installer.</span>
+          </div>
+          <div class="requirement">
+            <span class="check">✓</span>
+            <span>This page is designed for ESP32-C3 boards with the default GPIO wiring below, including 3.3V VCC.</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="grid" aria-label="Installation information">
+      <article class="section-card" id="wiring">
+        <p class="section-kicker">Hardware</p>
+        <h2>Default wiring</h2>
+        <p>
+          Wire the BC7215A module to the ESP32-C3 before installing the firmware.
+          Connect VCC to 3.3V.
+        </p>
+
+        <table class="wiring-table">
+          <thead>
+            <tr>
+              <th>BC7215 module signal</th>
+              <th>ESP32-C3 GPIO</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>BC7215 RX</td>
+              <td><span class="pin">GPIO3</span></td>
+            </tr>
+            <tr>
+              <td>BC7215 TX</td>
+              <td><span class="pin">GPIO4</span></td>
+            </tr>
+            <tr>
+              <td>BC7215 BUSY</td>
+              <td><span class="pin">GPIO1</span></td>
+            </tr>
+            <tr>
+              <td>BC7215 MOD</td>
+              <td><span class="pin">GPIO0</span></td>
+            </tr>
+            <tr>
+              <td>GND</td>
+              <td><span class="pin">GND</span></td>
+            </tr>
+            <tr>
+              <td>VCC</td>
+              <td><span class="pin">3.3V</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </article>
+
+      <article class="section-card">
+        <p class="section-kicker">Setup</p>
+        <h2>After installation</h2>
+        <p>
+          After flashing, configure WiFi and add the ESPHome device in Home Assistant.
+        </p>
+
+        <ol class="steps">
+          <li><span>Configure WiFi when prompted by the installer.</span></li>
+          <li><span>Open Home Assistant.</span></li>
+          <li><span>Go to <strong>Settings → Devices &amp; services</strong>.</span></li>
+          <li><span>Add the discovered ESPHome device.</span></li>
+		  <li><span>Prepare your IR remote to <strong>25°C/Cooling mode</strong>.</span></li>
+          <li><span>Open the device page and click <strong>Pair Button</strong>.</span></li>
+		  <li><span>Press <strong>Fan Speed</strong> on remote to finish pairing.</span></li>
+        </ol>
+      </article>
+
+      <aside class="notice">
+        <div class="notice-icon">!</div>
+        <div>
+          <strong>Important:</strong>
+          This web installer is only for ESP32-C3 boards using the default wiring.
+          If you use different GPIO pins, build a custom ESPHome YAML instead.
+        </div>
+      </aside>
+    </section>
+
+    <footer>
+      BC7215 AC Controller · ESPHome firmware installer
+    </footer>
+  </main>
+</body>
+</html>
