@@ -15,8 +15,8 @@ void BC7215ACClimate::setup() {
 
   this->ac_ = std::make_unique<bc7215::BC7215AC>(
       this->uart_num_,
-      this->rx_pin_,
-      this->tx_pin_,
+      this->bc7215_rx_pin_,
+      this->bc7215_tx_pin_,
       this->busy_pin_,
       this->mod_pin_);
 
@@ -37,6 +37,7 @@ void BC7215ACClimate::setup() {
   this->target_temperature = 25.0f;
   this->action = climate::CLIMATE_ACTION_OFF;
   this->set_fan_mode_(climate::CLIMATE_FAN_AUTO);
+  this->power_on_ = false;
 
   this->pref_ = this->make_entity_preference<StoredPairingData>(kPreferenceVersion);
   this->load_pairing_();
@@ -52,8 +53,8 @@ void BC7215ACClimate::loop() {
 void BC7215ACClimate::dump_config() {
   ESP_LOGCONFIG(TAG, "BC7215 AC Climate:");
   ESP_LOGCONFIG(TAG, "  UART: %d", static_cast<int>(this->uart_num_));
-  ESP_LOGCONFIG(TAG, "  TX pin: GPIO%d", static_cast<int>(this->tx_pin_));
-  ESP_LOGCONFIG(TAG, "  RX pin: GPIO%d", static_cast<int>(this->rx_pin_));
+  ESP_LOGCONFIG(TAG, "  BC7215 TX pin: GPIO%d", static_cast<int>(this->bc7215_tx_pin_));
+  ESP_LOGCONFIG(TAG, "  BC7215 RX pin: GPIO%d", static_cast<int>(this->bc7215_rx_pin_));
   ESP_LOGCONFIG(TAG, "  BUSY pin: GPIO%d", static_cast<int>(this->busy_pin_));
   ESP_LOGCONFIG(TAG, "  MOD pin: GPIO%d", static_cast<int>(this->mod_pin_));
   ESP_LOGCONFIG(TAG, "  Library temperature unit: %s", this->library_unit_celsius_ ? "Celsius" : "Fahrenheit");
@@ -230,6 +231,7 @@ void BC7215ACClimate::handle_parsing_loop_() {
   }
 
   this->ac_->stop_capture();
+  this->last_base_ = *(reinterpret_cast<const bc7215DataMaxPkt_t*>(this->ac_->data_packet()));
 
   int t = -1;
   int m = -1;
@@ -242,10 +244,16 @@ void BC7215ACClimate::handle_parsing_loop_() {
 	if (p == 0) {
 	  this->mode = climate::CLIMATE_MODE_OFF;
       this->action = climate::CLIMATE_ACTION_OFF;
+	  this->power_on_ = false;
+	  this->ac_->replace_base(last_base_);
 	} else if (p == 2) {
 	  if (this->mode != climate::CLIMATE_MODE_OFF) {
 	    this->mode = climate::CLIMATE_MODE_OFF;
         this->action = climate::CLIMATE_ACTION_OFF;
+		this->power_on_ = !this->power_on_;
+		if (!this->power_on_) {
+	  		this->ac_->replace_base(last_base_);
+		}
 	  }
 	}
   }
@@ -391,6 +399,7 @@ bool BC7215ACClimate::send_current_state_() {
   if (this->mode == climate::CLIMATE_MODE_OFF) {
     const auto *pkt = this->ac_->off();
     this->action = climate::CLIMATE_ACTION_OFF;
+	this->power_on_ = false;
     return pkt != nullptr;
   }
 
@@ -398,6 +407,11 @@ bool BC7215ACClimate::send_current_state_() {
   const int mode = this->map_mode_to_bc7215_(this->mode);
   const int fan = this->map_fan_to_bc7215_();
 
+  if (!this->power_on_)
+  {
+  	this->ac_->on();
+	this->power_on_ = true;
+  }
   const auto *pkt = this->ac_->set_to(temp, mode, fan, this->ac_pressed_key_);
   this->update_action_from_mode_();
   return pkt != nullptr;

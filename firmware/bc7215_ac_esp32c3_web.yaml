@@ -2,7 +2,8 @@ substitutions:
   # This Web Tools YAML is intended to be placed in the repo's firmware/ directory.
   # The project root is therefore one level up.
   bc7215_project_dir: ..
-  project_version: "1.2.0"
+  project_version: "1.3.0"
+
 
 esphome:
   name: bc7215-ac-ctrl

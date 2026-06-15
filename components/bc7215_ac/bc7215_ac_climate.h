@@ -20,8 +20,8 @@ namespace bc7215_ac {
 class BC7215ACClimate : public climate::Climate, public Component {
  public:
   void set_uart_num(int uart_num) { this->uart_num_ = static_cast<uart_port_t>(uart_num); }
-  void set_tx_pin(int pin) { this->tx_pin_ = static_cast<gpio_num_t>(pin); }
-  void set_rx_pin(int pin) { this->rx_pin_ = static_cast<gpio_num_t>(pin); }
+  void set_tx_pin(int pin) { this->bc7215_tx_pin_ = static_cast<gpio_num_t>(pin); }
+  void set_rx_pin(int pin) { this->bc7215_rx_pin_ = static_cast<gpio_num_t>(pin); }
   void set_busy_pin(int pin) { this->busy_pin_ = static_cast<gpio_num_t>(pin); }
   void set_mod_pin(int pin) { this->mod_pin_ = static_cast<gpio_num_t>(pin); }
   void set_library_unit_celsius(bool celsius) { this->library_unit_celsius_ = celsius; }
@@ -93,8 +93,8 @@ class BC7215ACClimate : public climate::Climate, public Component {
   void update_action_from_mode_();
 
   uart_port_t uart_num_{UART_NUM_1};
-  gpio_num_t tx_pin_{GPIO_NUM_NC};
-  gpio_num_t rx_pin_{GPIO_NUM_NC};
+  gpio_num_t bc7215_tx_pin_{GPIO_NUM_NC};
+  gpio_num_t bc7215_rx_pin_{GPIO_NUM_NC};
   gpio_num_t busy_pin_{GPIO_NUM_NC};
   gpio_num_t mod_pin_{GPIO_NUM_NC};
 
@@ -110,6 +110,8 @@ class BC7215ACClimate : public climate::Climate, public Component {
   uint8_t predefined_number_{0};
   uint8_t match_index_{0};
   uint8_t ac_pressed_key_{0};
+  bool power_on_{false};
+  bc7215DataMaxPkt_t	last_base_;
 
   std::string status_message_{"Not initialized."};
 };
