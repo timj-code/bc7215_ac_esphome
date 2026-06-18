@@ -1,8 +1,4 @@
----
-
----
-
-# ESPHome Universal A/C IR Control (Powered by BC7215)
+# Universal A/C IR Control For Home Assistant (ESPHome Project)
 
 This ESPHome project turns an ESP32 module combined with a BC7215 module into a universal A/C IR remote control that integrates seamlessly with Home Assistant. It supports one-step pairing with almost any air conditioner.
 
