@@ -2,7 +2,7 @@ substitutions:
   # This Web Tools YAML is intended to be placed in the repo's firmware/ directory.
   # The project root is therefore one level up.
   bc7215_project_dir: ..
-  project_version: "1.3.0"
+  project_version: "1.4.0"
 
 
 esphome:
@@ -36,7 +36,10 @@ ota:
   platform: esphome
 
 wifi:
-  ap: {}
+  ap: 
+    ssid: "BC7215_AC_Setup"
+    password: "12345678"
+    ap_timeout: 1min
 
 captive_portal:
 

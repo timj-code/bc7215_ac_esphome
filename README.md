@@ -1,3 +1,7 @@
+---
+
+---
+
 # ESPHome Universal A/C IR Control (Powered by BC7215)
 
 This ESPHome project turns an ESP32 module combined with a BC7215 module into a universal A/C IR remote control that integrates seamlessly with Home Assistant. It supports one-step pairing with almost any air conditioner.
@@ -27,6 +31,24 @@ For the **ESP32-C3 Super Mini**, connect it to the BC7215 module as shown below:
 Once the hardware is ready, open the following page and follow the on-screen instructions:
 
 [https://timj-code.github.io/bc7215_ac_esphome/](https://timj-code.github.io/bc7215_ac_esphome/)
+
+**Trouble Shooting:** 
+
+Some users may experience issues configuring Wi-Fi after installation. This is most likely because the download serial port of the **ESP32-C3 Super Mini** module is emulated by its internal USB peripheral. After firmware flashing and a subsequent reboot, the USB re-enumerates, which causes the host computer to detect a change in the COM port.
+
+If you encounter this issue, try unplugging and reconnecting the USB cable, navigating back to the home page in your browser, re-connect and selecting **"Connect to Wi-Fi"** directly.
+
+![](img/Screenshot_connect.png)
+
+If the issue persists, you can connect via **AP mode**:
+
+1. Power on the device and wait for about 1 minute.
+
+2. On your computer or mobile phone, connect to the Wi-Fi hotspot named **"BC7215_AC_Setup"**.
+
+3. Enter the password **"12345678"**.
+
+4. Follow the on-screen prompts to complete the Wi-Fi setup.
 
 ### Method 2: Clone and Compile (Custom Setup)
 
