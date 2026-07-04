@@ -10,6 +10,10 @@ You can control your air conditioner through Home Assistant if:
 
 **Bonus:** Any operations made using the original IR remote will also be synchronized back to Home Assistant in real time!
 
+A casing 3D model is provided, if you have a 3D printer, you can make this device look like a real product. More details about casing is [here](./docs/casing.md).
+
+![Casing](./img/assembly.jpg)
+
 ## Installation Methods
 
 There are two ways to install the firmware on your ESP32:
