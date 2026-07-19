@@ -64,6 +64,7 @@ class BC7215ACClimate : public climate::Climate, public Component {
   struct StoredPairingData {
     bc7215DataMaxPkt_t data;
     bc7215FormatPkt_t format;
+	uint8_t status;
     uint8_t match_index;
 	ParsingState parsing_state;
     bool library_unit_celsius;

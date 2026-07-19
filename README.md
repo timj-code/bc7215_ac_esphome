@@ -10,9 +10,11 @@ You can control your air conditioner through Home Assistant if:
 
 **Bonus:** Any operations made using the original IR remote will also be synchronized back to Home Assistant in real time!
 
-A casing 3D model is provided, if you have a 3D printer, you can make this device look like a real product. More details about casing is [here](./docs/casing.md).
+A casing 3D model is provided, if you have a 3D printer, you can make this device look like a real product. The casing is designed to be placed somewhere near the AC unit, such as at a desk top beneath the AC, so you can adjust the angle to let the IR LED and receiver to both face to the correct direction. Let the IR LED point to the AC unit while the receiver is facing towards the remote control.
 
-![Casing](./img/assembly.jpg)
+More details about casing is [here](./docs/casing.md).
+
+![](img/use-illustration_800px.png)
 
 ## Installation Methods
 
@@ -22,11 +24,25 @@ There are two ways to install the firmware on your ESP32:
 
 This is the easiest and fastest way to get your device up and running. No ESPHome installation or command-line operations are required—everything is done directly in your web browser.
 
-*Note: The only limitation is that your hardware setup must match the default configuration. This method specifically requires an **ESP32-C3** module, and you must connect it to the exact GPIO pins specified on the web page. (Using an ESP32-C3 Super Mini module is recommended for a seamless experience).*
+*Note: The only limitation is that your hardware setup must match the default configuration. *
 
-For the **ESP32-C3 Super Mini**, connect it to the BC7215 module as shown below:
+Many people including myself found the Super Mini modules often have WiFi problems, so I changed the design a bit so it can be compatible with both ESP32C3 XIAO and Super Minit, and also a version for classic ESP32 is provided. 
 
-![](img/supermini-bc7215module-wiring.jpg)
+XIAO is recomended as I found it has very good WiFi reception. I also modified the casing in this version, making it 3mm longer so the XIAO paper antenna  can be perfectly fit in the case.
+
+Connections for the **ESP32-C3 XIAO**:
+
+![](./img/XIAO-bc7215module-wiring.png)
+
+Connections for the **ESP32-C3 Super Mini** :
+
+*Note: It's different from the original (V1.4 or earlier), for upgrading firmwire from early versions go to the web install page and select 'LEGACY'*
+
+![](img/supermini-bc7215module-wiring.png)
+
+Connections for the **Classic ESP32**:
+
+![](./img/esp32-bc7215module-wiring.png)
 
 Once the hardware is ready, open the following page and follow the on-screen instructions:
 
@@ -34,17 +50,13 @@ Once the hardware is ready, open the following page and follow the on-screen ins
 
 **Trouble Shooting:** 
 
-Some users may experience issues configuring Wi-Fi after installation. This is most likely because the download serial port of the **ESP32-C3 Super Mini** module is emulated by its internal USB peripheral. After firmware flashing and a subsequent reboot, the USB re-enumerates, which causes the host computer to detect a change in the COM port.
+Some users may experience issues configuring Wi-Fi after installation. This is most likely because the download serial port of the **ESP32-C3** module is emulated by its internal USB peripheral. After firmware flashing and a subsequent reboot, the USB re-enumerates, which causes the host computer to detect a change in the COM port.
 
-If you encounter this issue, try unplugging and reconnecting the USB cable, navigating back to the home page in your browser, re-connect and selecting **"Connect to Wi-Fi"** directly.
-
-![](img/Screenshot_connect.png)
-
-If the issue persists, you can connect via **AP mode**:
+If you encounter this issue, the easiest way to connect is via **AP mode**:
 
 1. Power on the device and wait for about 1 minute.
 
-2. On your computer or mobile phone, connect to the Wi-Fi hotspot named **"BC7215_AC_Setup"**.
+2. On your computer or mobile phone, connect to the Wi-Fi hotspot named **"BC7215_AC_Setup_psw_12345678"**.
 
 3. Enter the password **"12345678"**.
 
@@ -71,8 +83,8 @@ climate:
   name: "Air Conditioner"
 
   bc7215_uart_num: 1
-  bc7215_tx_pin: GPIO3
-  bc7215_rx_pin: GPIO4
+  bc7215_tx_pin: GPIO4
+  bc7215_rx_pin: GPIO3
   bc7215_busy_pin: GPIO1
   bc7215_mod_pin: GPIO0
 ```

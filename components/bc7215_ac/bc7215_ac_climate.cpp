@@ -4,21 +4,24 @@
 #include <cstring>
 
 #include "esphome/core/log.h"
+#include "esphome/core/defines.h"
+#include "esphome/core/version.h"
 
 namespace esphome {
 namespace bc7215_ac {
 
 static const char *const TAG = "bc7215_ac.climate";
+std::string VERSION_STRING;
 
 void BC7215ACClimate::setup() {
   ESP_LOGCONFIG(TAG, "Setting up BC7215 AC climate adapter...");
 
   this->ac_ = std::make_unique<bc7215::BC7215AC>(
-      this->uart_num_,
-      this->bc7215_rx_pin_,
-      this->bc7215_tx_pin_,
-      this->busy_pin_,
-      this->mod_pin_);
+      this->uart_num_,			// ESP32 UART number
+      this->bc7215_rx_pin_,		// ESP32 TX pin
+      this->bc7215_tx_pin_,		// ESP32 RX pin
+      this->busy_pin_,			// ESP32 BUSY pin
+      this->mod_pin_);			// ESP32 MOD pin
 
   const esp_err_t err = this->ac_->begin();
   if (err != ESP_OK) {
@@ -27,6 +30,8 @@ void BC7215ACClimate::setup() {
     return;
   }
 
+  
+  VERSION_STRING = this->ac_->lib_version() ; 
   if (this->library_unit_celsius_) {
     this->ac_->set_celsius();
   } else {
@@ -52,11 +57,14 @@ void BC7215ACClimate::loop() {
 
 void BC7215ACClimate::dump_config() {
   ESP_LOGCONFIG(TAG, "BC7215 AC Climate:");
+  ESP_LOGCONFIG(TAG, "  Project name: %s", ESPHOME_PROJECT_NAME);
+  ESP_LOGCONFIG(TAG, "  Project version: %s", ESPHOME_PROJECT_VERSION);
   ESP_LOGCONFIG(TAG, "  UART: %d", static_cast<int>(this->uart_num_));
   ESP_LOGCONFIG(TAG, "  BC7215 TX pin: GPIO%d", static_cast<int>(this->bc7215_tx_pin_));
   ESP_LOGCONFIG(TAG, "  BC7215 RX pin: GPIO%d", static_cast<int>(this->bc7215_rx_pin_));
   ESP_LOGCONFIG(TAG, "  BUSY pin: GPIO%d", static_cast<int>(this->busy_pin_));
   ESP_LOGCONFIG(TAG, "  MOD pin: GPIO%d", static_cast<int>(this->mod_pin_));
+  ESP_LOGCONFIG(TAG, "  AC Library Version: %s", this->ac_->lib_version());
   ESP_LOGCONFIG(TAG, "  Library temperature unit: %s", this->library_unit_celsius_ ? "Celsius" : "Fahrenheit");
   ESP_LOGCONFIG(TAG, "  Paired: %s", this->is_paired() ? "yes" : "no");
 }
@@ -281,7 +289,7 @@ bool BC7215ACClimate::load_pairing_() {
     this->ac_->set_fahrenheit();
   }
 
-  if (!this->ac_->init(saved.data, saved.format)) {
+  if (!this->ac_->init(saved.status, saved.data, saved.format)) {
     ESP_LOGW(TAG, "Saved BC7215 AC pairing data exists, but init failed.");
     this->library_unit_celsius_ = configured_unit_celsius;
     if (this->library_unit_celsius_) {
@@ -300,13 +308,13 @@ bool BC7215ACClimate::load_pairing_() {
     if (!this->ac_->match_next()) {
       ESP_LOGW(TAG, "Saved match index %u cannot be restored.", saved.match_index);
       this->match_index_ = 0;
-	  this->ac_->init(saved.data, saved.format);	// use the first match
+	  this->ac_->init(saved.status, saved.data, saved.format);	// use the first match
 	  return true;
     }
     ++this->match_index_;
   }
 
-  this->set_status_("Pairing restored from FLASH.");
+  this->set_status_("Paired. Lib. Ver." + VERSION_STRING);
   ESP_LOGI(TAG, "BC7215 AC pairing restored. match_index=%u, unit=%s",
            this->match_index_, this->library_unit_celsius_ ? "C" : "F");
   return true;
@@ -318,6 +326,7 @@ bool BC7215ACClimate::save_pairing_() {
     return false;
   }
 
+  uint8_t status = this->ac_->status_byte();
   const bc7215DataVarPkt_t *src_data = this->ac_->data_packet();
   const bc7215FormatPkt_t *src_format = this->ac_->format_packet();
 
@@ -337,6 +346,7 @@ bool BC7215ACClimate::save_pairing_() {
   saved.data.bitLen = src_data->bitLen;
   std::memcpy(saved.data.data, src_data->data, data_bytes);
   saved.format = *src_format;
+  saved.status = status;
   saved.match_index = this->match_index_;
   saved.parsing_state = this->parsing_state_;
   saved.library_unit_celsius = this->library_unit_celsius_;
