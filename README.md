@@ -14,7 +14,7 @@ A casing 3D model is provided, if you have a 3D printer, you can make this devic
 
 More details about casing is [here](./docs/casing.md).
 
-![](img/use-illustration_800px.png)
+![](img/use-illustration_800px.jpg)
 
 ## Installation Methods
 
@@ -32,17 +32,17 @@ XIAO is recomended as I found it has very good WiFi reception. I also modified t
 
 Connections for the **ESP32-C3 XIAO**:
 
-![](./img/XIAO-bc7215module-wiring.png)
+![](./img/xiao-bc7215module-wiring.jpg)
 
 Connections for the **ESP32-C3 Super Mini** :
 
 *Note: It's different from the original (V1.4 or earlier), for upgrading firmwire from early versions go to the web install page and select 'LEGACY'*
 
-![](img/supermini-bc7215module-wiring.png)
+![](img/supermini-bc7215module-wiring.jpg)
 
 Connections for the **Classic ESP32**:
 
-![](./img/esp32-bc7215module-wiring.png)
+![](./img/esp32-bc7215module-wiring.jpg)
 
 Once the hardware is ready, open the following page and follow the on-screen instructions:
 
