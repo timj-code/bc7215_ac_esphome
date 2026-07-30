@@ -10,11 +10,15 @@ You can control your air conditioner through Home Assistant if:
 
 **Bonus:** Any operations made using the original IR remote will also be synchronized back to Home Assistant in real time!
 
+This project has also been ported to Matter protocol, which will not only work with Home Assistant, but also directly with Apple Home, Google Home etc, any system that supports Matter in theory. Link: [https://github.com/timj-code/bc7215_ac_matter](https://github.com/timj-code/bc7215_ac_matter)
+
 A casing 3D model is provided, if you have a 3D printer, you can make this device look like a real product. The casing is designed to be placed somewhere near the AC unit, such as at a desk top beneath the AC, so you can adjust the angle to let the IR LED and receiver to both face to the correct direction. Let the IR LED point to the AC unit while the receiver is facing towards the remote control.
 
 More details about casing is [here](./docs/casing.md).
 
-![](img/use-illustration_800px.jpg)
+This graph explains how this device works:
+
+![](img/use-illustration_1280px.jpg)
 
 ## Installation Methods
 
