@@ -1,6 +1,6 @@
 {
-  "name": "BC7215 AC Controller",
-  "version": "1.4.0",
+  "name": "BC7215 AC Controller - ESP32-C3",
+  "version": "1.6.0",
   "home_assistant_domain": "esphome",
   "new_install_prompt_erase": true,
   "builds": [

@@ -181,37 +181,9 @@
       font-size: clamp(1.03rem, 2vw, 1.22rem);
     }
 
-    .selection-warning {
-      display: flex;
-      gap: 14px;
-      align-items: flex-start;
-      margin: 0 0 28px;
-      padding: 18px 20px;
-      border-radius: var(--radius-md);
-      background: #fffbeb;
-      border: 1px solid #fde68a;
-      color: #78350f;
-    }
-
-    .selection-warning-icon {
-      width: 30px;
-      height: 30px;
-      flex: 0 0 auto;
-      display: grid;
-      place-items: center;
-      border-radius: 999px;
-      color: white;
-      background: var(--warning);
-      font-weight: 900;
-    }
-
-    .selection-warning strong {
-      color: #713f12;
-    }
-
     .board-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 22px;
       align-items: stretch;
     }
@@ -252,11 +224,6 @@
       text-transform: uppercase;
     }
 
-    .board-label.legacy {
-      color: #991b1b;
-      background: #fee2e2;
-      border-color: #fecaca;
-    }
 
     .board-label.esp32 {
       color: #0f766e;
@@ -471,11 +438,6 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .board-card:last-child {
-        grid-column: 1 / -1;
-        width: min(100%, 600px);
-        justify-self: center;
-      }
     }
 
     @media (max-width: 720px) {
@@ -483,10 +445,6 @@
         grid-template-columns: 1fr;
       }
 
-      .board-card:last-child {
-        grid-column: auto;
-        width: auto;
-      }
 
       .topbar {
         align-items: flex-start;
@@ -551,26 +509,18 @@
       <h1>Choose your board and install the firmware.</h1>
 
       <p class="lead">
-        Select the card that matches your ESP board and hardware revision.
+        Select the card that matches your ESP board.
         Check the wiring table carefully before flashing. Each card installs
         a firmware image compiled for its listed GPIO configuration.
       </p>
     </section>
 
-    <aside class="selection-warning">
-      <div class="selection-warning-icon">!</div>
-      <div>
-        <strong>Select the correct hardware configuration.</strong>
-        The two ESP32-C3 firmware variants use different BUSY and MOD pins.
-        Installing the wrong variant will prevent the BC7215 module from working correctly.
-      </div>
-    </aside>
 
     <section class="board-grid" aria-label="Available firmware builds">
       <article class="board-card">
         <header class="board-card-header">
           <span class="board-label">Configuration 1</span>
-          <h2>ESP32-C3 XIAO / ESP32-C3 Super Mini</h2>
+          <h2>ESP32-C3</h2>
           <p class="board-subtitle">
             Firmware for the current ESP32-C3 GPIO configuration.
           </p>
@@ -602,7 +552,7 @@
           <div class="installer-box">
             <div class="installer-inner">
               <esp-web-install-button
-                manifest="firmware/esp32-c3-xiao-supermini/manifest.json">
+                manifest="firmware/esp32-c3/manifest.json">
                 <button class="install-button" slot="activate">
                   Install ESP32-C3 firmware
                 </button>
@@ -620,58 +570,7 @@
 
       <article class="board-card">
         <header class="board-card-header">
-          <span class="board-label legacy">Configuration 2 · Legacy</span>
-          <h2>ESP32-C3 Super Mini</h2>
-          <p class="board-subtitle">
-            For hardware using V1.4 or earlier.
-          </p>
-        </header>
-
-        <div class="board-card-body">
-          <p class="section-kicker">Pin connections</p>
-          <p class="wiring-note">Use this firmware only for the earlier hardware revision.</p>
-
-          <table class="wiring-table">
-            <thead>
-              <tr>
-                <th>BC7215 signal</th>
-                <th>ESP GPIO</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td>BC7215 TX</td><td><span class="pin">GPIO4</span></td></tr>
-              <tr><td>BC7215 RX</td><td><span class="pin">GPIO3</span></td></tr>
-              <tr><td>BC7215 BUSY</td><td><span class="pin">GPIO1</span></td></tr>
-              <tr><td>BC7215 MOD</td><td><span class="pin">GPIO0</span></td></tr>
-            </tbody>
-          </table>
-
-          <p class="power-note">
-            Also connect BC7215 GND to GND and VCC to 3.3V.
-          </p>
-
-          <div class="installer-box">
-            <div class="installer-inner">
-              <esp-web-install-button
-                manifest="firmware/esp32-c3-old/manifest.json">
-                <button class="install-button" slot="activate">
-                  Install legacy ESP32-C3 firmware
-                </button>
-                <span class="unsupported" slot="unsupported">
-                  This browser does not support Web Serial.
-                </span>
-                <span class="unsupported" slot="not-allowed">
-                  Open this installer over HTTPS.
-                </span>
-              </esp-web-install-button>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="board-card">
-        <header class="board-card-header">
-          <span class="board-label esp32">Configuration 3</span>
+          <span class="board-label esp32">Configuration 2</span>
           <h2>ESP32</h2>
           <p class="board-subtitle">
             Firmware for the original ESP32 GPIO configuration.

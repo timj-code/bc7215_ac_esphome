@@ -1,5 +1,5 @@
 substitutions:
-  project_version: "1.5.0"
+  project_version: "1.6.0"
 
 esphome:
   name: bc7215-ac-ctrl
@@ -7,10 +7,26 @@ esphome:
   project:
     name: "timj-code.bc7215_ac"
     version: ${project_version}
-  platformio_options:
-    extra_scripts:
-      - pre:../../../components/bc7215_ac/add_bc7215_sources.py
+  includes:
+    # BC7215 C++ ESP-IDF wrappers
+    - deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215/bc7215.cpp
+    - deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215ac/bc7215ac.cpp
 
+    # BC7215 C library
+    - deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_lib.c
+    - deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_ac_lib.c
+
+    # C++ wrapper headers
+    - deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215/include/bc7215.hpp
+    - deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215ac/include/bc7215ac.hpp
+
+    # C library headers
+    - deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_lib.h
+    - deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_ac_lib.h
+    - deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_types.h
+
+    # Your ESP-IDF-specific BC7215 configuration
+    - deps/bc7215_ac_lib/examples/ESP-IDF/main/include/bc7215_lib_config.h
 
 esp32:
   variant: esp32c3
@@ -42,8 +58,8 @@ climate:
     bc7215_uart_num: 1
     bc7215_tx_pin: GPIO4
     bc7215_rx_pin: GPIO3
-    bc7215_busy_pin: GPIO1
-    bc7215_mod_pin: GPIO0
+    bc7215_busy_pin: GPIO5
+    bc7215_mod_pin: GPIO6
 
     library_temperature_unit: C
 

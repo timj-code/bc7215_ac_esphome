@@ -30,19 +30,21 @@ This is the easiest and fastest way to get your device up and running. No ESPHom
 
 *Note: The only limitation is that your hardware setup must match the default configuration. *
 
-Many people including myself found the Super Mini modules often have WiFi problems, so I changed the design a bit so it can be compatible with both ESP32C3 XIAO and Super Minit, and also a version for classic ESP32 is provided. 
+Many people including myself found the Super Mini modules bought on market often have WiFi problems(PRO version is much better), so I changed the design a bit so it can be compatible with both ESP32C3 XIAO and Super Minit, and also a version for classic ESP32 is provided. 
 
-XIAO is recomended as I found it has very good WiFi reception. I also modified the casing in this version, making it 3mm longer so the XIAO paper antenna  can be perfectly fit in the case.
+XIAO is recomended as I found it has very good WiFi reception. As the boards are slightly different in dimensions, there are 3 files for the bottom part of the casing: For XIAO, for Super Mini, and for Mini Pro version.
 
 Connections for the **ESP32-C3 XIAO**:
 
 ![](./img/xiao-bc7215module-wiring.jpg)
 
-Connections for the **ESP32-C3 Super Mini** :
+Connections for the **ESP32-C3 Super Mini (PRO)** :
 
-*Note: It's different from the original (V1.4 or earlier), for upgrading firmwire from early versions go to the web install page and select 'LEGACY'*
+*Note: It's different from the original (V1.4 or earlier), the support for the old connection has been removed since V1.6.
 
 ![](img/supermini-bc7215module-wiring.jpg)
+
+![](img/minipro-bc7215module-wiring.jpg)
 
 Connections for the **Classic ESP32**:
 
@@ -89,8 +91,8 @@ climate:
   bc7215_uart_num: 1
   bc7215_tx_pin: GPIO4
   bc7215_rx_pin: GPIO3
-  bc7215_busy_pin: GPIO1
-  bc7215_mod_pin: GPIO0
+  bc7215_busy_pin: GPIO5
+  bc7215_mod_pin: GPIO6
 ```
 
 ****Important Note:** Do not select a UART port that conflicts with the download/programming port. Also, avoid using GPIO pins that are already assigned to other hardware components (such as LCDs, LEDs, or buttons).
@@ -119,10 +121,10 @@ Run the following command in the project root directory:
 esphome run bc7215_ac_ctrl.yaml
 ```
 
-Alternatively, you can launch the ESPHome dashboard:
+Alternatively, you can launch the ESPHome Device Builder:
 
 ```bash
-esphome dashboard ./
+esphome-device-builder .
 ```
 
 And complete the installation via your browser.
