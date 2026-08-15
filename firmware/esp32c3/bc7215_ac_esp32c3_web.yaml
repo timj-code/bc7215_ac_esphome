@@ -1,14 +1,9 @@
 substitutions:
-  # This Web Tools YAML is intended to be placed in the repo's firmware/ directory.
-  # The project root is therefore one level up.
-  bc7215_project_dir: ..
   project_version: "1.6.1"
-
 
 esphome:
   name: bc7215-ac-ctrl
   friendly_name: BC7215 AC CONTROLLER
-  name_add_mac_suffix: true
   project:
     name: "timj-code.bc7215_ac"
     version: ${project_version}
@@ -33,9 +28,8 @@ esphome:
     # Your ESP-IDF-specific BC7215 configuration
     - ../../deps/bc7215_ac_lib/examples/ESP-IDF/main/include/bc7215_lib_config.h
 
-
 esp32:
-  variant: esp32
+  variant: esp32c3
   framework:
     type: esp-idf
 
@@ -68,10 +62,10 @@ climate:
     name: "AC"
 
     bc7215_uart_num: 1
-    bc7215_tx_pin: GPIO16	# ESP32 RX pin
-    bc7215_rx_pin: GPIO17	# ESP32 TX pin
-    bc7215_busy_pin: GPIO18
-    bc7215_mod_pin: GPIO19
+    bc7215_tx_pin: GPIO4
+    bc7215_rx_pin: GPIO3
+    bc7215_busy_pin: GPIO5
+    bc7215_mod_pin: GPIO6
 
     library_temperature_unit: C
 
@@ -101,4 +95,4 @@ text_sensor:
       return {id(ac_controller).status_message()};
 
 preferences:
-  flash_write_interval: 1s
+  flash_write_interval: 5s
