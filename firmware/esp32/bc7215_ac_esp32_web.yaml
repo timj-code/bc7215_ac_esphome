@@ -1,8 +1,8 @@
 substitutions:
   # This Web Tools YAML is intended to be placed in the repo's firmware/ directory.
   # The project root is therefore one level up.
-  bc7215_project_dir: ..
-  project_version: "1.6.1"
+  bc7215_project_dir: "../.."
+  project_version: "1.6.2"
 
 
 esphome:
@@ -14,21 +14,21 @@ esphome:
     version: ${project_version}
   includes:
     # BC7215 C++ ESP-IDF wrappers
-    - ../../deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215/bc7215.cpp
-    - ../../deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215ac/bc7215ac.cpp
+    - ${bc7215_project_dir}/deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215/bc7215.cpp
+    - ${bc7215_project_dir}/deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215ac/bc7215ac.cpp
 
     # BC7215 C library
-    - ../../deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_lib.c
-    - ../../deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_ac_lib.c
+    - ${bc7215_project_dir}/deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_lib.c
+    - ${bc7215_project_dir}/deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_ac_lib.c
 
     # C++ wrapper headers
-    - ../../deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215/include/bc7215.hpp
-    - ../../deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215ac/include/bc7215ac.hpp
+    - ${bc7215_project_dir}/deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215/include/bc7215.hpp
+    - ${bc7215_project_dir}/deps/bc7215_ac_lib/examples/ESP-IDF/components/bc7215ac/include/bc7215ac.hpp
 
     # C library headers
-    - ../../deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_lib.h
-    - ../../deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_ac_lib.h
-    - ../../deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_types.h
+    - ${bc7215_project_dir}/deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_lib.h
+    - ${bc7215_project_dir}/deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_ac_lib.h
+    - ${bc7215_project_dir}/deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_types.h
 
     # Your ESP-IDF-specific BC7215 configuration
     - ../../deps/bc7215_ac_lib/examples/ESP-IDF/main/include/bc7215_lib_config.h
@@ -42,7 +42,7 @@ esp32:
 external_components:
   - source:
       type: local
-      path: ../../components
+      path: ${bc7215_project_dir}/components
     components: [bc7215_ac]
 
 logger:
