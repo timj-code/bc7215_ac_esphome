@@ -29,7 +29,7 @@ esphome:
     - ${bc7215_project_dir}/deps/bc7215_ac_lib/bc7215_ac_lib/bc7215_types.h
 
     # Your ESP-IDF-specific BC7215 configuration
-    - ../../deps/bc7215_ac_lib/examples/ESP-IDF/main/include/bc7215_lib_config.h
+    - ${bc7215_project_dir}/deps/bc7215_ac_lib/examples/ESP-IDF/main/include/bc7215_lib_config.h
 
 esp32:
   variant: esp32c3
