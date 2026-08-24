@@ -204,6 +204,7 @@ void BC7215ACClimate::handle_pairing_loop_() {
   }
 
   this->ac_->stop_capture();
+  this->log_data_packet_("RX", reinterpret_cast<const bc7215DataVarPkt_t*>(&this->ac_->sample_data[0]));
   this->pairing_ = false;
   this->pair_state_ = PairState::IDLE;
 
@@ -239,6 +240,7 @@ void BC7215ACClimate::handle_parsing_loop_() {
   }
 
   this->ac_->stop_capture();
+  this->log_data_packet_("RX", reinterpret_cast<const bc7215DataVarPkt_t*>(&this->ac_->sample_data[0]));
   this->last_base_ = *(reinterpret_cast<const bc7215DataMaxPkt_t*>(this->ac_->data_packet()));
 
   int t = -1;
@@ -246,6 +248,7 @@ void BC7215ACClimate::handle_parsing_loop_() {
   int f = -1;
   int p = -1;
   if (this->ac_->parse(t, m, f, p)) {
+    ESP_LOGI(TAG, "Parsed t=%d, m=%d, f=%d, p=%d", t, m, f, p);
     this->mode = this->map_bc7215_mode_to_ha_(m);
 	this->set_fan_mode_(this->map_bc7215_fan_to_ha_(f));
 	this->target_temperature = library_temp_to_climate_temp_(t);
@@ -264,6 +267,9 @@ void BC7215ACClimate::handle_parsing_loop_() {
 		}
 	  }
 	}
+  }
+  else {
+    ESP_LOGI(TAG, "Parsing Failed.");
   }
 
   this->update_action_from_mode_();
@@ -329,6 +335,8 @@ bool BC7215ACClimate::save_pairing_() {
   uint8_t status = this->ac_->status_byte();
   const bc7215DataVarPkt_t *src_data = this->ac_->data_packet();
   const bc7215FormatPkt_t *src_format = this->ac_->format_packet();
+  this->log_format_packet_("PAIRED FORMAT", src_format);
+  this->log_data_packet_("PAIRED DATA", src_data);
 
   if (src_data == nullptr || src_format == nullptr) {
     ESP_LOGW(TAG, "Cannot save pairing data: data or format packet is null.");
@@ -408,6 +416,8 @@ bool BC7215ACClimate::send_current_state_() {
 
   if (this->mode == climate::CLIMATE_MODE_OFF) {
     const auto *pkt = this->ac_->off();
+  	ESP_LOGW(TAG, "SET TO OFF by Home Assistant");
+  	this->log_data_packet_("TX", pkt);
     this->action = climate::CLIMATE_ACTION_OFF;
 	this->power_on_ = false;
     return pkt != nullptr;
@@ -420,9 +430,12 @@ bool BC7215ACClimate::send_current_state_() {
   if (!this->power_on_)
   {
   	this->ac_->on();
+	ESP_LOGW(TAG, "SET TO ON by Home Assistant.");
 	this->power_on_ = true;
   }
   const auto *pkt = this->ac_->set_to(temp, mode, fan, this->ac_pressed_key_);
+  ESP_LOGW(TAG, "SET TO Temp=%d, Mode=%d, Fan=%d by Home Assistant", temp, mode, fan);
+  this->log_data_packet_("TX", pkt);
   this->update_action_from_mode_();
   return pkt != nullptr;
 }
@@ -596,6 +609,85 @@ void BC7215ACClimate::update_action_from_mode_() {
       this->action = climate::CLIMATE_ACTION_IDLE;
       break;
   }
+}
+
+void BC7215ACClimate::log_data_packet_(const char *label, const bc7215DataVarPkt_t *pkt) const {
+
+  if (pkt == nullptr) {
+    ESP_LOGD(TAG, "%s: <null packet>", label);
+    return;
+  }
+
+  const uint16_t data_bytes =
+      static_cast<uint16_t>((pkt->bitLen + 7) / 8);
+
+  std::string hex;
+  hex.reserve(data_bytes * 3);
+
+  char buf[4];
+
+  for (uint16_t i = 0; i < data_bytes; ++i) {
+    std::snprintf(
+        buf,
+        sizeof(buf),
+        "%02X",
+        static_cast<unsigned int>(pkt->data[i]));
+
+    if (!hex.empty()) {
+      hex += ' ';
+    }
+
+    hex += buf;
+  }
+
+  ESP_LOGD(
+      TAG,
+      "%s: bitLen=%u, bytes=%u: %s",
+      label,
+      static_cast<unsigned int>(pkt->bitLen),
+      static_cast<unsigned int>(data_bytes),
+      hex.c_str());
+}
+
+void BC7215ACClimate::log_format_packet_(
+    const char *label,
+    const bc7215FormatPkt_t *pkt) const {
+
+  if (pkt == nullptr) {
+    ESP_LOGD(TAG, "%s: <null format packet>", label);
+    return;
+  }
+
+  const uint8_t *raw =
+      reinterpret_cast<const uint8_t *>(pkt);
+
+  const size_t bytes = sizeof(bc7215FormatPkt_t);
+
+  std::string hex;
+  hex.reserve(bytes * 3);
+
+  char buf[4];
+
+  for (size_t i = 0; i < bytes; ++i) {
+    std::snprintf(
+        buf,
+        sizeof(buf),
+        "%02X",
+        static_cast<unsigned int>(raw[i]));
+
+    if (!hex.empty()) {
+      hex += ' ';
+    }
+
+    hex += buf;
+  }
+
+  ESP_LOGD(
+      TAG,
+      "%s: bytes=%u: %s",
+      label,
+      static_cast<unsigned int>(bytes),
+      hex.c_str());
 }
 
 }  // namespace bc7215_ac

@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <string>
-
+#include <cstdio>
 #include "driver/gpio.h"
 #include "driver/uart.h"
 
@@ -18,6 +18,10 @@ namespace esphome {
 namespace bc7215_ac {
 
 class BC7215ACClimate : public climate::Climate, public Component {
+ private:
+  void log_data_packet_(const char *label, const bc7215DataVarPkt_t *pkt) const;
+  void log_format_packet_(const char *label, const bc7215FormatPkt_t *pkt) const;
+
  public:
   void set_uart_num(int uart_num) { this->uart_num_ = static_cast<uart_port_t>(uart_num); }
   void set_tx_pin(int pin) { this->bc7215_tx_pin_ = static_cast<gpio_num_t>(pin); }
@@ -69,6 +73,7 @@ class BC7215ACClimate : public climate::Climate, public Component {
 	ParsingState parsing_state;
     bool library_unit_celsius;
   };
+
   static constexpr uint32_t kPreferenceVersion = 1;
 
   void set_status_(const std::string &message);
