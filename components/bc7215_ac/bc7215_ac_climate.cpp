@@ -45,7 +45,11 @@ void BC7215ACClimate::setup() {
   this->power_on_ = false;
 
   this->pref_ = this->make_entity_preference<StoredPairingData>(kPreferenceVersion);
+  this->user_pref_ = this->make_entity_preference<StoredUserFunction>(kUserPreferenceKey);
+
   this->load_pairing_();
+  this->load_user_function_();
+  this->user_function_active_ = false;
 
   this->publish_state();
 }
@@ -94,6 +98,11 @@ climate::ClimateTraits BC7215ACClimate::traits() {
 }
 
 void BC7215ACClimate::control(const climate::ClimateCall &call) {
+  if (this->pairing_) {
+    this->set_status_(
+        "Pairing or user-function learning in progress.");
+    return;
+  }
   if (!this->ac_ || !this->is_paired()) {
     this->set_status_("Not paired. Press pair first.");
     return;
@@ -129,13 +138,50 @@ void BC7215ACClimate::start_pairing() {
     return;
   }
 
-  this->mark_unpaired_();
+  if (this->pairing_) {
+    return;
+  }
 
+  // If User base is currently active, restore normal base first.
+  if (this->user_function_active_) {
+    if (!this->ac_->replace_base(this->normal_base_before_user_)) {
+      this->set_status_("Failed to restore normal base.");
+      return;
+    }
+
+    this->user_function_active_ = false;
+  }
+
+  // Remember whether this is a first pairing or a re-pair.
+  this->pairing_had_existing_pair_ = this->is_paired();
+
+  // User learning is NOT selected yet.
+  this->user_learning_ = false;
+
+  // For first pairing, clear the old runtime state first.
+  //
+  // IMPORTANT:
+  // mark_unpaired_() sets pairing_=false and pair_state_=IDLE,
+  // so it MUST be called before entering PAIRING state.
+  if (!this->pairing_had_existing_pair_) {
+    this->mark_unpaired_();
+  }
+
+  // Now enter pairing state.
+  this->parsing_state_ = ParsingState::STOP;
   this->pair_state_ = PairState::PAIRING;
   this->pairing_ = true;
   this->match_index_ = 0;
 
-  this->set_status_("Pairing: press Fan with 25°C/Cool mode");
+  if (!this->pairing_had_existing_pair_) {
+    this->set_status_(
+        "Pairing: send 25°C Cool from the remote.");
+  } else {
+    this->set_status_(
+        "Press User Button to learn a user function, "
+        "or send 25°C Cool to re-pair.");
+  }
+
   this->ac_->start_capture(1);
 }
 
@@ -207,6 +253,62 @@ void BC7215ACClimate::handle_pairing_loop_() {
   this->log_data_packet_("RX", reinterpret_cast<const bc7215DataVarPkt_t*>(&this->ac_->sample_data[0]));
   this->pairing_ = false;
   this->pair_state_ = PairState::IDLE;
+
+  if (this->user_learning_) {
+    // ------------------------------------------------
+    // USER FUNCTION LEARNING
+    // ------------------------------------------------
+  
+    this->user_learning_ = false;
+  
+    bc7215DataMaxPkt_t original_base{};
+  
+    if (!this->copy_current_base_(original_base)) {
+      this->parsing_state_ = ParsingState::IDLE;
+      this->set_status_("Store current base failed.");
+      return;
+    }
+  
+    // New function: operate directly on captured IR.
+    if (!this->ac_->replace_base()) {
+      this->parsing_state_ = ParsingState::IDLE;
+      this->set_status_("This function has different format. User function learning failed.");
+      return;
+    }
+  
+    // replace_base() succeeded, so current base is now
+    // the learned user-function base.
+    if (!this->copy_current_base_(this->user_base_)) {
+      this->ac_->replace_base(original_base);
+  
+      this->parsing_state_ = ParsingState::IDLE;
+      this->set_status_("Failed to store user function.");
+      return;
+    }
+  
+    this->user_base_valid_ = true;
+    this->user_function_active_ = false;
+  
+    const bool saved = this->save_user_function_();
+  
+    // Always return to the original normal base.
+    const bool restored =
+        this->ac_->replace_base(original_base);
+  
+    this->parsing_state_ = ParsingState::IDLE;
+    this->pairing_had_existing_pair_ = false;
+  
+    if (!restored) {
+      this->set_status_("Failed to restore normal base.");
+    } else if (!saved) {
+      this->set_status_(
+          "User function learned, but flash save failed.");
+    } else {
+      this->set_status_("User function saved.");
+    }
+  
+    return;
+  }
 
   if (this->ac_->init()) {
     this->match_index_ = 0;
@@ -688,6 +790,147 @@ void BC7215ACClimate::log_format_packet_(
       label,
       static_cast<unsigned int>(bytes),
       hex.c_str());
+}
+
+bool BC7215ACClimate::copy_current_base_(bc7215DataMaxPkt_t &dst) const {
+  if (!this->ac_) {
+    return false;
+  }
+
+  const bc7215DataVarPkt_t *src = this->ac_->data_packet();
+  if (src == nullptr) {
+    return false;
+  }
+
+  const uint16_t bytes =
+      static_cast<uint16_t>((src->bitLen + 7) / 8);
+
+  if (bytes == 0 || bytes > sizeof(dst.data)) {
+    return false;
+  }
+
+  std::memset(&dst, 0, sizeof(dst));
+  dst.bitLen = src->bitLen;
+  std::memcpy(dst.data, src->data, bytes);
+
+  return true;
+}
+
+bool BC7215ACClimate::save_user_function_() {
+  if (!this->user_base_valid_) {
+    return false;
+  }
+
+  StoredUserFunction saved{};
+  saved.valid = true;
+  saved.data = this->user_base_;
+
+  if (!this->user_pref_.save(&saved)) {
+    ESP_LOGW(TAG, "Failed to save user function.");
+    return false;
+  }
+
+  ESP_LOGI(TAG, "User function saved.");
+  return true;
+}
+
+bool BC7215ACClimate::load_user_function_() {
+  StoredUserFunction saved{};
+
+  if (!this->user_pref_.load(&saved) || !saved.valid) {
+    this->user_base_valid_ = false;
+    ESP_LOGI(TAG, "No saved user function.");
+    return false;
+  }
+
+  const uint16_t bytes =
+      static_cast<uint16_t>((saved.data.bitLen + 7) / 8);
+
+  if (bytes == 0 || bytes > sizeof(saved.data.data)) {
+    this->user_base_valid_ = false;
+    ESP_LOGW(TAG, "Saved user function is invalid.");
+    return false;
+  }
+
+  this->user_base_ = saved.data;
+  this->user_base_valid_ = true;
+  this->user_function_active_ = false;
+
+  ESP_LOGI(TAG, "User function restored from flash.");
+  return true;
+}
+
+void BC7215ACClimate::clear_user_function_() {
+  this->user_base_valid_ = false;
+  this->user_function_active_ = false;
+
+  StoredUserFunction saved{};
+  saved.valid = false;
+  this->user_pref_.save(&saved);
+}
+
+void BC7215ACClimate::user_button() {
+  if (!this->ac_) {
+    this->set_status_("BC7215AC is not ready.");
+    return;
+  }
+
+  if (this->pairing_) {
+    // User learning requires an existing valid pairing.
+    if (!this->pairing_had_existing_pair_) {
+      this->set_status_(
+          "Complete normal pairing before learning a user function.");
+      return;
+    }
+
+    this->user_learning_ = true;
+    this->ac_->start_capture(0);
+    ESP_LOGI(TAG, "User function learning, turn to simple RX mode.");
+
+    this->set_status_(
+        "User function learning: Press the remote button to be learnt.");
+
+    return;
+  }
+
+  // Normal User Button toggle logic follows here...
+  if (!this->is_paired()) {
+    this->set_status_("AC is not paired.");
+    return;
+  }
+
+  if (!this->user_base_valid_) {
+    this->set_status_("No user function saved.");
+    return;
+  }
+
+  if (!this->user_function_active_) {
+    // Remember whatever the current normal base is.
+    if (!this->copy_current_base_(
+            this->normal_base_before_user_)) {
+      this->set_status_("Failed to save current base.");
+      return;
+    }
+
+    if (!this->ac_->replace_base(this->user_base_)) {
+      this->set_status_("Failed to enable user function.");
+      return;
+    }
+
+    this->user_function_active_ = true;
+    this->set_status_("User function enabled.");
+  } else {
+    if (!this->ac_->replace_base(
+            this->normal_base_before_user_)) {
+      this->set_status_("Failed to restore normal base.");
+      return;
+    }
+
+    this->user_function_active_ = false;
+    this->set_status_("User function disabled.");
+  }
+  this->send_current_state_();
+  this->publish_state();
 }
 
 }  // namespace bc7215_ac

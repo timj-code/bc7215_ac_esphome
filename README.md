@@ -155,7 +155,7 @@ To pair, you need to transmit a specific IR signal from your original remote to 
 
 2. Look at your device's interface in Home Assistant (it should look similar to the image below):
    
-   ![Buttons and status display](./img/Home%20Assistant1.png)
+   ![Buttons and status display](./img/HomeAssistant1.png)
 
 3. Click the **Pair Button** in Home Assistant. The Text Sensor will update to:
    
@@ -170,6 +170,36 @@ To pair, you need to transmit a specific IR signal from your original remote to 
 You can now fully control your air conditioner via Home Assistant! The blue LED on the BC7215 module will remain illuminated, indicating it is continuously listening for IR signals. This allows Home Assistant to stay perfectly in sync whenever you use the original physical remote.
 
 ![](./img/Home%20Assistant2.png)
+
+### Configure User Button
+
+The basic code can let you control the most frequently used Temperature, Working Mode and Fan Speed of the AC, however, there are many other functions on the AC, the user button will let you to control an extra function of your choice, for example "Swing" or "Sleep" etc.
+
+##### How Does it work?
+
+Unlike the IR for an A/V device, the IR for the AC contains all the control information in a single IR frame. In the pairing step, the ESP32 stores an IR frame as the 'base', then when you change settings, it will edit the corresponding part of the base to generate a new IR signal. The control for 'Swing' or 'Sleep' was already in there, but kept unchanged. 
+
+The user button let you to record an extra IR frame with the desired control information in and use it to replace the normal 'base' when you want to control that function.
+
+##### Steps:
+
+1. Pair the device with AC as described above, but keep in mind you are going to setup the "User Button" later, so let the extra function be "OFF" when you do the pairing. We'll use 'Swing' as example below.
+
+2. Press "**Pair Button**" again, the text area will show "**Press User Button to learn a user function, or send 25°C Cool to re-pair.**"
+
+3. Now press the "**User Button**" in HA, the text message will show "**User function learning: Press the remote button to be learnt.**"
+
+4. Press the 'Swing' button on the remote, after this, the 'Swing' function will "ON" on the remote, and you finished the configuration.
+
+5. When you want to turn the swing on, you press the "User Button" in Home Assistant, and the swing will keep "ON" no matter what Temperature or Mode your set until you press the "User Button" again.
+
+##### Tips & Cautions
+
+1. The title of the button in Home Assistant can be changed, so you can change the "User Button" to a more meaningful name.
+
+2. You can let it control more than 1 function if you like, for example, if there are both "Swing horizontally" and "Swing Vertically" functions, you can control them simultaneously by setting them both OFF and ON during setup.
+
+3. As ESP32 will keep listening to the IR and replace the base to sync status with the remote, if you operated the "User Button" controlled function from the remote, you must change it back by the remote too, otherwise the working base and the user button replaced base may have the same status and this will make the button looks like stop working.
 
 #### What does the "Alt Button" do?
 

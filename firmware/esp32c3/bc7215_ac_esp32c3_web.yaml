@@ -2,7 +2,7 @@ substitutions:
   # This Web Tools YAML is intended to be placed in the repo's firmware/ directory.
   # The project root is therefore one level up.
   bc7215_project_dir: "../.."
-  project_version: "1.6.3"
+  project_version: "1.7.0"
 
 
 esphome:
@@ -91,6 +91,12 @@ button:
     on_press:
       - lambda: |-
           id(ac_controller).builtin_or_next();
+
+  - platform: template
+    name: "User Button"
+    on_press:
+      - lambda: |-
+          id(ac_controller).user_button();
 
 text_sensor:
   - platform: template

@@ -46,6 +46,7 @@ class BC7215ACClimate : public climate::Climate, public Component {
   void start_pairing();
   void stop_pairing();
   void builtin_or_next();
+  void user_button();
 
   // Helper methods for text_sensor/display lambdas.
   std::string status_message() const { return this->status_message_; }
@@ -74,7 +75,13 @@ class BC7215ACClimate : public climate::Climate, public Component {
     bool library_unit_celsius;
   };
 
+  struct StoredUserFunction {
+    bool valid;
+    bc7215DataMaxPkt_t data;
+  };
+
   static constexpr uint32_t kPreferenceVersion = 1;
+  static constexpr uint32_t kUserPreferenceKey = 2;
 
   void set_status_(const std::string &message);
   void handle_pairing_loop_();
@@ -83,6 +90,11 @@ class BC7215ACClimate : public climate::Climate, public Component {
 
   bool load_pairing_();
   bool save_pairing_();
+
+  bool load_user_function_();
+  bool save_user_function_();
+  void clear_user_function_();
+  bool copy_current_base_(bc7215DataMaxPkt_t &dst) const;
 
   bool try_next_predefined_();
   bool try_match_next_();
@@ -105,8 +117,17 @@ class BC7215ACClimate : public climate::Climate, public Component {
   gpio_num_t mod_pin_{GPIO_NUM_NC};
 
   bool library_unit_celsius_{true};
+  bool pairing_had_existing_pair_{false};
+  bool user_learning_{false};
+
+  bool user_base_valid_{false};
+  bool user_function_active_{false};
+
+  bc7215DataMaxPkt_t user_base_{};
+  bc7215DataMaxPkt_t normal_base_before_user_{};
 
   ESPPreferenceObject pref_;
+  ESPPreferenceObject user_pref_;
 
   std::unique_ptr<bc7215::BC7215AC> ac_;
 

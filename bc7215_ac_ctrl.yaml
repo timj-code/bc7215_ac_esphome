@@ -1,6 +1,6 @@
 substitutions:
   bc7215_project_dir: "."
-  project_version: "1.6.2"
+  project_version: "1.7.0"
 
 
 esphome:
@@ -83,6 +83,12 @@ button:
     on_press:
       - lambda: |-
           id(ac_controller).builtin_or_next();
+
+  - platform: template
+    name: "User Button"
+    on_press:
+      - lambda: |-
+          id(ac_controller).user_button();
 
 text_sensor:
   - platform: template
