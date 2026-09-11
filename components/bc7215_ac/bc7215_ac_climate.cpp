@@ -78,6 +78,7 @@ climate::ClimateTraits BC7215ACClimate::traits() {
 
   traits.add_supported_mode(climate::CLIMATE_MODE_OFF);
   traits.add_supported_mode(climate::CLIMATE_MODE_AUTO);
+  traits.add_supported_mode(climate::CLIMATE_MODE_HEAT_COOL);
   traits.add_supported_mode(climate::CLIMATE_MODE_COOL);
   traits.add_supported_mode(climate::CLIMATE_MODE_HEAT);
   traits.add_supported_mode(climate::CLIMATE_MODE_DRY);
@@ -583,6 +584,7 @@ int BC7215ACClimate::map_mode_to_bc7215_(climate::ClimateMode mode) const {
   // 0 Auto, 1 Cool, 2 Heat, 3 Dry, 4 Fan
   switch (mode) {
     case climate::CLIMATE_MODE_AUTO:
+	case climate::CLIMATE_MODE_HEAT_COOL:
       return 0;
     case climate::CLIMATE_MODE_COOL:
       return 1;
@@ -622,7 +624,8 @@ climate::ClimateMode BC7215ACClimate::map_bc7215_mode_to_ha_(int m) const {
 
   switch (m) {
     case 0:
-      return climate::CLIMATE_MODE_AUTO;
+      return climate::CLIMATE_MODE_HEAT_COOL;
+//      return climate::CLIMATE_MODE_AUTO;
 
     case 1:
       return climate::CLIMATE_MODE_COOL;
@@ -705,6 +708,7 @@ void BC7215ACClimate::update_action_from_mode_() {
       this->action = climate::CLIMATE_ACTION_FAN;
       break;
     case climate::CLIMATE_MODE_AUTO:
+    case climate::CLIMATE_MODE_HEAT_COOL:
       this->action = climate::CLIMATE_ACTION_IDLE;
       break;
     default:

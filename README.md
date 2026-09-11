@@ -137,7 +137,7 @@ Once the hardware is connected and the firmware is flashed, a new air conditione
 
 - A climate control entity (A/C controller)
 
-- Two action buttons
+- Three action buttons
 
 - A Text Sensor to display real-time status info
 
@@ -201,6 +201,10 @@ The user button let you to record an extra IR frame with the desired control inf
 
 3. As ESP32 will keep listening to the IR and replace the base to sync status with the remote, if you operated the "User Button" controlled function from the remote, you must change it back by the remote too, otherwise the working base and the user button replaced base may have the same status and this will make the button looks like stop working.
 
-#### What does the "Alt Button" do?
+### Mode Mapping
+
+Home Assistant AC has 5 working modes: AUTO, HEAT/COOL, COOL, HEAT, DRY, and FAN ONLY, but usually an AC unit will only have 4: AUTO, COOL, HEAT, DRY, FAN ONLY. The difference between AUTO and HEAT/COOL is, in AUTO mode, user can not set temperature, while in HEAT/COOL mode, use can set a target temperature. For an AC unit, different brands may have different approach for AUTO mode, it seems more brands have temperature adjustable in AUTO mode, so since V1.7.1, I have changed the mode mapping from AUTO - AUTO to AUTO in AC to HEAT/COOL in HA, but regardless of whether you set to AUTO or HEAT/COOL mode in HA, the AC will always set to AUTO.
+
+### What does the "Alt Button" do?
 
 According to the BC7215 AC library documentation, a small number of air conditioners may fail to pair, or may pair successfully but still cannot control the AC. **This button is only intended to be used in such situations.** In my program design, each press switches to another built-in special protocol and sends a test signal. If you find that the air conditioner responds after switching to a certain protocol, that should be the setting capable of controlling your air conditioner. Since I have not encountered an air conditioner that cannot be controlled, I have not been able to test this feature myself. Feedback from users who encounter this situation would be appreciated.
