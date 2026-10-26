@@ -1,6 +1,6 @@
 substitutions:
   bc7215_project_dir: "."
-  project_version: "1.7.1"
+  project_version: "1.7.2"
 
 
 esphome:
